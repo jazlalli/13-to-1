@@ -30,4 +30,3 @@ test('<Route> name is removed', assert => {
   assert.equal(result, expected);
   assert.end();
 });
-
