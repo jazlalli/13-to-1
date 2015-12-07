@@ -1,7 +1,4 @@
 import test from 'tape';
-import {parse} from 'babylon';
-import traverse from 'babel-traverse';
-import generate from 'babel-generator';
 import {runCodeMod} from '../utils';
 import routeConfig from '../../mods/routeConfig';
 
