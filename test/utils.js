@@ -2,7 +2,7 @@ import {parse} from 'babylon';
 import traverse from 'babel-traverse';
 import generate from 'babel-generator';
 
-const runCodeMod = (input, visitor) => {
+export const runCodeMod = (input, visitor) => {
   const ast = parse(input, {sourceType: 'module', plugins: ['jsx']});
 
   traverse(ast, visitor);
@@ -14,8 +14,4 @@ const runCodeMod = (input, visitor) => {
   }, input);
 
   return output.code;
-};
-
-export default {
-  runCodeMod
 };

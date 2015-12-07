@@ -2,7 +2,7 @@ import test from 'tape';
 import {parse} from 'babylon';
 import traverse from 'babel-traverse';
 import generate from 'babel-generator';
-import utils from '../utils';
+import {runCodeMod} from '../utils';
 import routeConfig from '../../mods/routeConfig';
 
 const visitor = { enter: routeConfig };
@@ -14,7 +14,7 @@ test('<Route> handler is renamed to component', assert => {
   const expected = '<Route component={Home} />;';
 
   // act
-  const result = utils.runCodeMod(input, visitor);
+  const result = runCodeMod(input, visitor);
 
   // assert
   assert.equal(result, expected);
@@ -25,7 +25,7 @@ test('<Route> name is removed', assert => {
   const input = '<Route name="app" />;';
   const expected = '<Route />;';
 
-  const result = utils.runCodeMod(input, visitor);
+  const result = runCodeMod(input, visitor);
 
   assert.equal(result, expected);
   assert.end();
