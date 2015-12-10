@@ -1,17 +1,14 @@
 import test from 'tape';
-import {runCodeMod} from '../utils';
-import routeConfig from '../../mods/routeConfig';
-
-const visitor = { enter: routeConfig };
+import {visit} from '../utils';
+import routeConfigVisitor from '../../visitors/routeConfig';
 
 test('<Route> handler is renamed to component', assert => {
-
   // arrange
   const input = '<Route handler={Home} />;';
   const expected = '<Route component={Home} />;';
 
   // act
-  const result = runCodeMod(input, visitor);
+  const result = visit(input, routeConfigVisitor);
 
   // assert
   assert.equal(result, expected);
@@ -22,7 +19,7 @@ test('<Route> name is removed', assert => {
   const input = '<Route name="app" />;';
   const expected = '<Route />;';
 
-  const result = runCodeMod(input, visitor);
+  const result = visit(input, routeConfigVisitor);
 
   assert.equal(result, expected);
   assert.end();

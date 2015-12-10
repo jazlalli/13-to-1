@@ -4,19 +4,21 @@
   "description": "Code mod to upgrade React Router v0.13 code to v1",
   "main": "lib/index.js",
   "scripts": {
-    "test": "browserify -t [babelify --presets es2015] test/fixtures/*.js | node | faucet"
+    "test": "browserify -t [babelify --presets es2015] test/fixtures/*.js | node | faucet",
+    "start": "babel-node --presets es2015 ./index.js"
   },
   "author": "Jaz Lalli",
   "license": "MIT",
   "dependencies": {
     "babel-generator": "~6.3.13",
+    "babel-template": "^6.3.13",
     "babel-traverse": "~6.3.13",
     "babel-types": "~6.3.14",
     "babylon": "~6.3.13"
   },
   "devDependencies": {
     "babel-plugin-transform-react-jsx": "~6.3.13",
-    "babel-preset-es2015": "~6.3.13",
+    "babel-preset-es2015": "^6.3.13",
     "babelify": "~7.2.0",
     "browserify": "~12.0.1",
     "faucet": "0.0.1",

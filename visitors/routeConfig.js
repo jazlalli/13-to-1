@@ -1,8 +1,7 @@
 import * as t from 'babel-types';
 
-module.exports = function (path) {
-  if (t.isJSXAttribute(path.node)) {
-
+module.exports = {
+  JSXAttribute(path) {
     // rename handler to component
     if (path.node.name.name === 'handler') {
       path.replaceWith(
@@ -14,6 +13,5 @@ module.exports = function (path) {
     if (path.node.name.name === 'name') {
       path.remove();
     }
-
   }
 };

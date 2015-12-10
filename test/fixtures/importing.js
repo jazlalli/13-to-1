@@ -1,23 +1,35 @@
 import test from 'tape';
-import {runCodeMod} from '../utils';
-import importing from '../../mods/importing';
+import {visit, formatCodeString} from '../utils';
+import importingVisitor from '../../visitors/importing';
 
-const visitor = { enter: importing };
-
-test('import a single global instead of Router by default', assert => {
-
+test('require returns single parent object instead of Router', assert => {
   // arrange
-  const input = `
+  const input = formatCodeString(`
     var Router = require('react-router');
-  `;
+    var Route = Router.Route;
+  `);
 
-  const expected = `
+  const expected = formatCodeString(`
     var ReactRouter = require('react-router');
     var Router = ReactRouter.Router;
-  `;
+    var Route = ReactRouter.Route;
+  `);
 
   // act
-  const result = runCodeMod(input, visitor);
+  const result = visit(input, importingVisitor);
+
+  // assert
+  assert.equal(formatCodeString(result), expected);
+  assert.end();
+});
+
+test('import a single parent object instead of Router', assert => {
+  // arrange
+  const input = `import Router from 'react-router'`;
+  const expected = `import {Router} from 'react-router'`;
+
+  // act
+  const result = visit(input, importingVisitor);
 
   // assert
   assert.equal(result, expected);
