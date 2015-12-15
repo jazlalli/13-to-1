@@ -6,7 +6,12 @@ import visitors from './visitors';
 // TODO: make this run all the mods
 import {visit, formatCodeString} from './test/utils';
 
-let input = `import Router from 'react-router'`;
+let input = formatCodeString(`
+  var Router = 'HELLO!';
+  var ReactRouter = require('react-router');
+  var Route = ReactRouter.Route;
+`);
+
 let output = '';
 
 visitors.forEach(v => {

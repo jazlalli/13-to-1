@@ -6,18 +6,14 @@ import * as t from 'babel-types';
 //   .filter(k => k.match(/^([a-z])+/igm))
 //   .map(k => console.log(k));
 
-const updateVariableNameVisitor = {
+const updateTopLevelVariableName = {
   Identifier(path) {
-    if (path.node.name === this.variableName) {
-      path.node.name = 'React' + this.variableName;
-    }
-  }
-}
+    let newVar = 'React' + this.variableName;
 
-const updateMemberExpressionVisitor = {
-  MemberExpression(path) {
     if (path.node.name === this.variableName) {
-      path.node.name = 'ReactRouter';
+      if (!path.scope.hasOwnBinding(newVar)) {
+        path.node.name = newVar;
+      }
     }
   }
 }
@@ -64,8 +60,7 @@ module.exports = {
       if (declaration) {
         const variableName = importVariable(declaration.name);
         parent.node.id.name = 'React' + variableName;
-        path.traverse(updateVariableNameVisitor, {variableName});
-        path.traverse(updateMemberExpressionVisitor, {variableName});
+        path.traverse(updateTopLevelVariableName, {variableName});
       }
     }
   },
@@ -93,6 +88,8 @@ module.exports = {
         let newSpecifier = t.Identifier(specifier.local.name);
         path.node.specifiers.pop();
         path.node.specifiers.push(t.ImportSpecifier(newSpecifier, newSpecifier));
+
+        // i want to lookup usage of the original default import specifier, and use an appropriate ImportSpecifier instead. see test for failing example
       }
     }
   }
