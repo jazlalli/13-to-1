@@ -1,17 +1,19 @@
 import * as t from 'babel-types';
 
 module.exports = {
-  JSXAttribute(path) {
-    // rename handler to component
-    if (path.node.name.name === 'handler') {
-      path.replaceWith(
-        t.jSXAttribute(t.jSXIdentifier('component'), path.node.value)
-      );
-    }
+  JSXOpeningElement(path) {
+    if (path.node.name.name === 'Route') {
+      path.node.attributes = path.node.attributes
+        .filter(a => a.name.name !== 'name')
 
-    // remove name
-    if (path.node.name.name === 'name') {
-      path.remove();
+      path.node.attributes = path.node.attributes
+        .map(a => {
+          if (a.name.name === 'handler') {
+            a.name.name = 'component';
+          }
+
+          return a;
+        });
     }
   }
 };

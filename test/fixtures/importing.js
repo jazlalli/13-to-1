@@ -25,8 +25,8 @@ test('require returns single parent object instead of Router', assert => {
 
 test('import a single parent object instead of Router', assert => {
   // arrange
-  const input = `import Router from 'react-router'`;
-  const expected = `import {Router} from 'react-router'`;
+  const input = `import Router from 'react-router';`;
+  const expected = `import { Router } from 'react-router';`;
 
   // act
   const result = visit(input, importingVisitor);

@@ -2,9 +2,9 @@ import template from 'babel-template';
 import * as t from 'babel-types';
 
 // just to see what I've got from babel-types
-Object.keys(t)
-  .filter(k => k.match(/^([a-z])+/igm))
-  .map(k => console.log(k));
+// Object.keys(t)
+//   .filter(k => k.match(/^([a-z])+/igm))
+//   .map(k => console.log(k));
 
 const updateVariableNameVisitor = {
   Identifier(path) {
@@ -23,12 +23,13 @@ const updateMemberExpressionVisitor = {
 }
 
 const createRouterVariable = () => {
-  var declarator = t.variableDeclarator(t.identifier(importVariable()));
-  var variable = t.variableDeclaration('var', [declarator]);
-  var member = t.memberExpression(t.identifier('ReactRouter'), t.identifier('Router'));
+  const member = t.memberExpression(
+    t.identifier('ReactRouter'), t.identifier('Router'));
 
-  const expression = t.assignmentExpression('=', declarator, member);
+  const declarator = t.variableDeclarator(
+    t.identifier(importVariable()), member);
 
+  const expression = t.variableDeclaration('var', [declarator]);
   return expression;
 }
 
@@ -64,6 +65,7 @@ module.exports = {
         const variableName = importVariable(declaration.name);
         parent.node.id.name = 'React' + variableName;
         path.traverse(updateVariableNameVisitor, {variableName});
+        path.traverse(updateMemberExpressionVisitor, {variableName});
       }
     }
   },
@@ -80,5 +82,19 @@ module.exports = {
         parent.parentPath.insertBefore(createRouterVariable());
       }
     }
+  },
+
+  ImportDeclaration(path) {
+    const specifier = path.node.specifiers[0];
+    const src = path.node.source;
+
+    if (specifier && specifier.type === 'ImportDefaultSpecifier') {
+      if (src.value === 'react-router') {
+        let newSpecifier = t.Identifier(specifier.local.name);
+        path.node.specifiers.pop();
+        path.node.specifiers.push(t.ImportSpecifier(newSpecifier, newSpecifier));
+      }
+    }
   }
+
 };
