@@ -13,7 +13,7 @@ A code mod to upgrade your React-Router from v0.13 to v1. This uses babel intern
 
 ### Usage
 
-ATM ¯\_(ツ)_/¯
+ATM `¯\_(ツ)_/¯`
 
 I'll work this out in due course.
 
