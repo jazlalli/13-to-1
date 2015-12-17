@@ -1,35 +1,21 @@
 import * as t from 'babel-types';
 
-// just to see what I've got from babel-types
-// Object.keys(t)
-//   .filter(k => k.match(/^([a-z])+/igm))
-//   .map(k => console.log(k));
-
-let set = false;
-const variable = new Map();
-const importVariable = value => {
-  if (!value) {
-    return variable.get('name');
-  }
-
-  if (set || typeof value !== 'string') {
-    return null;
-  }
-
-  if (value) {
-    variable.set('name', value);
-    set = true;
-    return variable.get('name');
-  }
+const createSpecifier = name => {
+  const identifier = t.identifier(name);
+  return t.importSpecifier(identifier, identifier);
 };
 
-const updateTopLevelVariableName = {
-  Identifier(path) {
-    const newVar = 'React' + this.variableName;
+const addImportSpecifier = {
+  ImportDeclaration(path) {
+    const property = this ? this.property : null;
+    if (property) {
+      const specs = path.node.specifiers;
+      const imports = specs
+                        .map(s => s.local.name)
+                        .filter(s => s === property.name);
 
-    if (path.node.name === this.variableName) {
-      if (!path.scope.hasOwnBinding(newVar)) {
-        path.node.name = newVar;
+      if (imports.indexOf(property.name) < 0) {
+        specs.push(createSpecifier(property.name));
       }
     }
   }
@@ -37,74 +23,49 @@ const updateTopLevelVariableName = {
 
 const destructureRouterProperties = {
   VariableDeclaration(path) {
-    const property = this.variableName;
-    const dec = path.node.declarations[0];
-
-    if (dec && dec.init.type === 'MemberExpression') {
-      const name = dec.init.object.name;
-
-      if (name === this.variableName) {
-        console.log('DESTRUCTURE THIS', name);
-      }
+    const property = this ? this.property : null;
+    if (property) {
+      path.remove();
+      path.parentPath.traverse(addImportSpecifier, {property});
     }
   }
-};
-
-const createRouterVariable = () => {
-  const member = t.memberExpression(
-    t.identifier('ReactRouter'), t.identifier('Router'));
-
-  const declarator = t.variableDeclarator(
-    t.identifier(importVariable()), member);
-
-  const expression = t.variableDeclaration('var', [declarator]);
-  return expression;
 };
 
 module.exports = {
-  CallExpression(path) {
-    const parent = path.parentPath;
-    const callee = path.node.callee.name;
-    const arg = path.node.arguments[0].value;
+  Program(path) {
 
-    if (callee === 'require' && arg === 'react-router') {
-      const declaration = parent.node.id;
+    let importSpecifier = '';
 
-      if (declaration) {
-        const variableName = importVariable(declaration.name);
-        parent.node.id.name = 'React' + variableName;
-        path.traverse(updateTopLevelVariableName, {variableName});
+    path.node.body.forEach(p => {
+      if (p.type === 'ImportDeclaration') {
+        const specifier = p.specifiers[0];
+        const src = p.source;
+
+        if (specifier && specifier.type === 'ImportDefaultSpecifier') {
+          if (src.value === 'react-router') {
+            importSpecifier = specifier.local.name;
+            const variable = t.identifier(importSpecifier);
+
+            p.specifiers.pop();
+            p.specifiers.push(t.importSpecifier(variable, variable));
+            path.traverse(addImportSpecifier, {property: variable});
+          }
+        }
       }
-    }
-  },
 
-  MemberExpression(path) {
-    const parent = path.parentPath;
-    const variableName = importVariable();
-    const initial = parent.node.init;
 
-    if (initial) {
-      const obj = initial.object;
-      if (obj.name && obj.name === variableName) {
-        obj.name = 'React' + obj.name;
-        parent.parentPath.insertBefore(createRouterVariable());
+      if (p.type === 'VariableDeclaration') {
+        const dec = p.declarations[0];
+
+        if (dec && dec.init.type === 'MemberExpression') {
+          const obj = dec.init.object.name;
+          const property = t.identifier(dec.init.property.name);
+
+          if (obj === importSpecifier) {
+            path.traverse(destructureRouterProperties, {property});
+          }
+        }
       }
-    }
-  },
-
-  ImportDeclaration(path) {
-    const specifier = path.node.specifiers[0];
-    const src = path.node.source;
-
-    if (specifier && specifier.type === 'ImportDefaultSpecifier') {
-      if (src.value === 'react-router') {
-        const variableName = t.identifier(specifier.local.name);
-        path.node.specifiers.pop();
-        path.node.specifiers.push(t.importSpecifier(variableName, variableName));
-
-        // path.traverse(destructureRouterProperties, {variableName});
-      }
-    }
+    });
   }
-
 };

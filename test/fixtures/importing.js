@@ -1,6 +1,6 @@
 import test from 'tape';
 import {visit, formatCodeString} from '../../lib/utils';
-import importingVisitor from '../../visitors/importing';
+import importVisitor from '../../visitors/importing';
 
 test('import Router using destructured object property', assert => {
   // arrange
@@ -8,7 +8,7 @@ test('import Router using destructured object property', assert => {
   const expected = `import { Router } from 'react-router';`;
 
   // act
-  const result = visit(input, importingVisitor);
+  const result = visit(input, importVisitor);
 
   // assert
   assert.equal(result, expected);
@@ -26,30 +26,9 @@ test('import Router and Route using desctructured object properties', assert => 
     `);
 
   // act
-  const result = visit(input, importingVisitor);
+  const result = visit(input, importVisitor);
 
   // assert
   assert.equal(result, expected);
-  assert.end();
-});
-
-test('require returns single parent object instead of Router', assert => {
-  // arrange
-  const input = formatCodeString(`
-    var Router = require('react-router');
-    var Route = Router.Route;
-  `);
-
-  const expected = formatCodeString(`
-    var ReactRouter = require('react-router');
-    var Router = ReactRouter.Router;
-    var Route = ReactRouter.Route;
-  `);
-
-  // act
-  const result = visit(input, importingVisitor);
-
-  // assert
-  assert.equal(formatCodeString(result), expected);
   assert.end();
 });

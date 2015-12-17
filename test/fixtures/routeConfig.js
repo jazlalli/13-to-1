@@ -25,7 +25,7 @@ test('<Route> name is removed', assert => {
   assert.end();
 });
 
-test('attributes of same name on other components are not affected', assert => {
+test('<Route> attributes on other components remain unaffected', assert => {
   const input = '<CustomComponent name="Timmy" age="42" handler="Jimmy" />;';
   const expected = '<CustomComponent name="Timmy" age="42" handler="Jimmy" />;';
 
