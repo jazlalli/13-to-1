@@ -1,10 +1,5 @@
-import {parse} from 'babylon';
-import traverse from 'babel-traverse';
-import generate from 'babel-generator';
-import visitors from './visitors';
-
-// TODO: make this run all the mods
-import {visit, formatCodeString} from './test/utils';
+import importing from './visitors/importing';
+import {visit, formatCodeString} from './lib/utils';
 
 let input = formatCodeString(`
   var Router = 'HELLO!';
@@ -13,10 +8,7 @@ let input = formatCodeString(`
 `);
 
 let output = '';
-
-visitors.forEach(v => {
-  output = visit(formatCodeString(input), v);
-  input = output;
-});
+output = visit(formatCodeString(input), importing);
+input = output;
 
 console.log(formatCodeString(output));

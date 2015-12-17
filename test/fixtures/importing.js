@@ -1,5 +1,5 @@
 import test from 'tape';
-import {visit, formatCodeString} from '../utils';
+import {visit, formatCodeString} from '../../lib/utils';
 import importingVisitor from '../../visitors/importing';
 
 test('import Router using destructured object property', assert => {
@@ -17,11 +17,13 @@ test('import Router using destructured object property', assert => {
 
 test('import Router and Route using desctructured object properties', assert => {
   // arrange
-  const input = `
-    import Router from 'react-router';
-    const Route = Router.Route;
-  `;
-  const expected = `import { Router, Route } from 'react-router';`;
+  const input = formatCodeString(`
+      import Router from 'react-router';
+      const Route = Router.Route;
+    `);
+  const expected = formatCodeString(`
+      import { Router, Route } from 'react-router';
+    `);
 
   // act
   const result = visit(input, importingVisitor);

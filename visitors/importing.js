@@ -1,4 +1,3 @@
-import template from 'babel-template';
 import * as t from 'babel-types';
 
 // just to see what I've got from babel-types
@@ -6,9 +5,27 @@ import * as t from 'babel-types';
 //   .filter(k => k.match(/^([a-z])+/igm))
 //   .map(k => console.log(k));
 
+let set = false;
+const variable = new Map();
+const importVariable = value => {
+  if (!value) {
+    return variable.get('name');
+  }
+
+  if (set || typeof value !== 'string') {
+    return null;
+  }
+
+  if (value) {
+    variable.set('name', value);
+    set = true;
+    return variable.get('name');
+  }
+};
+
 const updateTopLevelVariableName = {
   Identifier(path) {
-    let newVar = 'React' + this.variableName;
+    const newVar = 'React' + this.variableName;
 
     if (path.node.name === this.variableName) {
       if (!path.scope.hasOwnBinding(newVar)) {
@@ -16,7 +33,22 @@ const updateTopLevelVariableName = {
       }
     }
   }
-}
+};
+
+const destructureRouterProperties = {
+  VariableDeclaration(path) {
+    const property = this.variableName;
+    const dec = path.node.declarations[0];
+
+    if (dec && dec.init.type === 'MemberExpression') {
+      const name = dec.init.object.name;
+
+      if (name === this.variableName) {
+        console.log('DESTRUCTURE THIS', name);
+      }
+    }
+  }
+};
 
 const createRouterVariable = () => {
   const member = t.memberExpression(
@@ -27,26 +59,7 @@ const createRouterVariable = () => {
 
   const expression = t.variableDeclaration('var', [declarator]);
   return expression;
-}
-
-
-let set = false;
-const variable = new Map();
-const importVariable = value => {
-  if (!value) {
-    return variable.get('name');
-  }
-
-  if (set || typeof value !== 'string') {
-    return;
-  }
-
-  if (value) {
-    variable.set('name', value);
-    set = true;
-    return variable.get('name');
-  }
-}
+};
 
 module.exports = {
   CallExpression(path) {
@@ -85,11 +98,11 @@ module.exports = {
 
     if (specifier && specifier.type === 'ImportDefaultSpecifier') {
       if (src.value === 'react-router') {
-        let newSpecifier = t.Identifier(specifier.local.name);
+        const variableName = t.identifier(specifier.local.name);
         path.node.specifiers.pop();
-        path.node.specifiers.push(t.ImportSpecifier(newSpecifier, newSpecifier));
+        path.node.specifiers.push(t.importSpecifier(variableName, variableName));
 
-        // i want to lookup usage of the original default import specifier, and use an appropriate ImportSpecifier instead. see test for failing example
+        // path.traverse(destructureRouterProperties, {variableName});
       }
     }
   }

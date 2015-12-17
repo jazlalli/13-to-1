@@ -1,5 +1,5 @@
 import test from 'tape';
-import {visit} from '../utils';
+import {visit} from '../../lib/utils';
 import routeConfigVisitor from '../../visitors/routeConfig';
 
 test('<Route> handler is renamed to component', assert => {
